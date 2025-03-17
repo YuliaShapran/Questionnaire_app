@@ -1,5 +1,5 @@
 
-const API_URL = 'http://localhost:3000/api/surveys';
+const API_URL = 'https://questionnaire-app-n3a5.onrender.com/api/surveys';
 const urlParams = new URLSearchParams(window.location.search);
 const quizId = urlParams.get('id');
 

@@ -16,6 +16,14 @@ mongoose.connect(process.env.MONGO_URI)
   .catch((err) => console.error('MongoDB connection error:', err));
 
 
+app.get('/', (req, res) => {
+  res.status(200).send('API is working!');
+});
+
+app.use((req, res) => {
+  res.status(404).send('Route not found');
+});
+
 app.use(cors());
 app.use(express.json());
 
