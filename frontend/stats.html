@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Survey Statistics</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+
+  <nav>
+    <h1>Questionnaire Statistics</h1>
+    <div>
+      <a href="index.html" class="btn btn-secondary">Home</a>
+      <a href="create.html" class="btn btn-primary">New Survey</a>
+    </div>
+  </nav>
+
+  <h2 id="quiz-title">Survey Title</h2>
+
+  <p id="average-time" class="mb-4">Average completion time: Loading...</p>
+
+  <div class="fade-in">
+    <canvas id="submissions-chart" class="card"></canvas>
+  </div>
+
+  <h2>Question Statistics</h2>
+  <div id="question-charts" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8"></div>
+
+	<script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+	<script src="js/stats.js" defer></script>
+	<script src="js/theme.js" defer></script>
+</body>
+
+</html>

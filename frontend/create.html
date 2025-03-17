@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Create Survey</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/styles.css">
+
+</head>
+
+<body>
+
+  <nav>
+    <h1>Create Survey</h1>
+    <div>
+      <a href="index.html" class="btn btn-secondary">Home</a>
+      <a href="create.html" class="btn btn-primary">New Survey</a>
+    </div>
+  </nav>
+
+
+  <form id="survey-form" class="space-y-6">
+
+    <div>
+      <label>Survey Title:</label>
+      <input id="survey-title" type="text" placeholder="Enter survey title" required>
+    </div>
+
+    <div>
+      <label>Description:</label>
+      <textarea id="survey-description" placeholder="Enter survey description"></textarea>
+    </div>
+
+
+    <h2>Questions</h2>
+    <div id="questions-container" class="space-y-4"></div>
+
+ 
+    <button type="button" id="add-question" class="btn btn-secondary">Add Question</button>
+    <button type="submit" class="btn btn-primary">Submit Survey</button>
+
+  </form>
+
+   <script src="js/create.js" defer></script>
+	<script src="js/theme.js" defer></script>
+</body>
+
+</html>

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Fill Survey</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+  <nav>
+    <h1>Fill Survey</h1>
+    <div>
+      <a href="index.html" class="btn btn-secondary">Home</a>
+      <a href="create.html" class="btn btn-primary">New Survey</a>
+    </div>
+  </nav>
+
+  <h2 id="quiz-title" class="mb-4">Loading...</h2>
+  <p id="quiz-description" class="mb-8"></p>
+  <form id="quiz-form" class="space-y-6"></form>
+  <button id="submit-btn" class="btn btn-primary mt-4">Submit Answers</button>
+  <p id="time-tracker" class="mt-8"></p>
+
+	<script src="js/fill.js" defer></script>
+	<script src="js/theme.js" defer></script>
+</body>
+
+</html>
