@@ -1,134 +1,110 @@
-
 const API_URL = 'https://questionnaire-app-n3a5.onrender.com/api/surveys';
 const quizContainer = document.getElementById('quiz-container');
-const skeletonContainer = document.getElementById('skeleton-container');
-
-
-const deleteModal = document.getElementById('delete-modal');
-const confirmDeleteBtn = document.getElementById('confirm-delete');
-const cancelDeleteBtn = document.getElementById('cancel-delete');
 
 let currentPage = 1;
-const limit = 6;
-let isLoading = false;
-let hasMore = true;
-let deleteSurveyId = null;
+let isLoading = false; 
+let hasMoreSurveys = true; 
 
 
-function openDeleteModal(surveyId) {
-  deleteSurveyId = surveyId;
-  deleteModal.classList.remove('hidden');
-}
+async function fetchSurveys() {
+  if (isLoading || !hasMoreSurveys) return; 
 
-
-function closeDeleteModal() {
-  deleteSurveyId = null;
-  deleteModal.classList.add('hidden');
-}
-
-
-async function deleteSurvey() {
-  if (!deleteSurveyId) return;
+  isLoading = true; 
 
   try {
-    const response = await fetch(`${API_URL}/${deleteSurveyId}`, {
-      method: 'DELETE',
-    });
+    const response = await fetch(`${API_URL}?page=${currentPage}`);
+    if (!response.ok) throw new Error(`Ошибка загрузки: ${response.statusText}`);
 
-    if (!response.ok) {
-      throw new Error('Failed to delete survey');
-    }
-
-    showToast('🗑️ Survey deleted successfully!', 'success');
-    quizContainer.innerHTML = ''; 
-    currentPage = 1;
-    fetchSurveys(currentPage); 
-  } catch (error) {
-    console.error('Error deleting survey:', error);
-    showToast('Failed to delete survey.', 'error');
-  } finally {
-    closeDeleteModal();
-  }
-}
-
-
-confirmDeleteBtn.addEventListener('click', deleteSurvey);
-cancelDeleteBtn.addEventListener('click', closeDeleteModal);
-
-
-function showSkeletons(count = 3) {
-  skeletonContainer.innerHTML = '';
-
-  for (let i = 0; i < count; i++) {
-    const skeleton = `
-      <div class="card skeleton">
-        <div class="skeleton-title"></div>
-        <div class="skeleton-text"></div>
-        <div class="skeleton-btn-container">
-          <div class="skeleton-btn"></div>
-          <div class="skeleton-btn"></div>
-        </div>
-      </div>
-    `;
-    skeletonContainer.insertAdjacentHTML('beforeend', skeleton);
-  }
-
-  skeletonContainer.classList.remove('hidden');
-}
-
-
-function hideSkeletons() {
-  skeletonContainer.classList.add('hidden');
-}
-
-
-async function fetchSurveys(page) {
-  if (isLoading || !hasMore) return;
-  isLoading = true;
-  showSkeletons();
-
-  try {
-    const response = await fetch(`${API_URL}?page=${page}&limit=${limit}`);
     const { surveys } = await response.json();
 
-    if (surveys.length < limit) hasMore = false;
-    renderSurveys(surveys);
+    if (surveys.length === 0) {
+      hasMoreSurveys = false; 
+    } else {
+      displaySurveys(surveys);
+      currentPage++; 
+    }
   } catch (error) {
-    console.error('Error loading surveys:', error);
-    showToast('Failed to load surveys.', 'error');
+    console.error('Ошибка при загрузке опросов:', error);
   } finally {
-    isLoading = false;
-    hideSkeletons();
+    isLoading = false; 
   }
 }
 
 
-function renderSurveys(surveys) {
+function displaySurveys(surveys) {
   surveys.forEach((survey) => {
-    const card = document.createElement('div');
-    card.className = 'card fade-in';
-    card.innerHTML = `
-      <h2>${survey.title}</h2>
-      <p>${survey.description}</p>
-      <div class="btn-container">
-        <a href="fill.html?id=${survey._id}" class="btn btn-secondary">Fill Survey</a>
-        <a href="stats.html?id=${survey._id}" class="btn btn-primary">View Stats</a>
-        <button class="btn btn-danger delete-btn" data-id="${survey._id}">Delete</button>
+    const surveyCard = document.createElement('div');
+    surveyCard.className = 'card p-4 bg-white shadow rounded-lg';
+    surveyCard.innerHTML = `
+      <h3 class="text-xl font-semibold mb-2">${survey.title}</h3>
+      <p class="mb-4">${survey.description}</p>
+      <div class="flex gap-4">
+        <button onclick="fillSurvey('${survey._id}')" class="btn btn-primary">Fill Survey</button>
+        <button onclick="viewStats('${survey._id}')" class="btn btn-secondary">View Stats</button>
+        <button onclick="confirmDelete('${survey._id}')" class="btn btn-danger">Delete</button>
       </div>
     `;
 
-    card.querySelector('.delete-btn').addEventListener('click', () => openDeleteModal(survey._id));
-    quizContainer.appendChild(card);
+
+    quizContainer.appendChild(surveyCard);
   });
 }
 
 
+function fillSurvey(id) {
+  window.location.href = `/survey.html?id=${id}`;
+}
+
+
+function viewStats(id) {
+  window.location.href = `/stats.html?id=${id}`;
+}
+
+
+async function confirmDelete(id) {
+  const deleteModal = document.getElementById('delete-modal');
+  const confirmButton = document.getElementById('confirm-delete');
+  const cancelButton = document.getElementById('cancel-delete');
+
+  deleteModal.classList.remove('hidden');
+
+  cancelButton.addEventListener('click', () => deleteModal.classList.add('hidden'));
+
+  confirmButton.onclick = async () => {
+    try {
+      const response = await fetch(`${API_URL}/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) throw new Error('Не удалось удалить опрос');
+
+      deleteModal.classList.add('hidden');
+      alert('Опрос удалён');
+      resetSurveys(); 
+    } catch (error) {
+      console.error('Ошибка при удалении опроса:', error);
+      alert('Не удалось удалить опрос.');
+    }
+  };
+}
+
+
+function resetSurveys() {
+  quizContainer.innerHTML = '';
+  currentPage = 1;
+  hasMoreSurveys = true;
+  fetchSurveys();
+}
+
+
 function handleScroll() {
-  if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 200) {
-    fetchSurveys(++currentPage);
+  if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
+    fetchSurveys(); 
   }
 }
 
 
-document.addEventListener('scroll', handleScroll);
-fetchSurveys(currentPage);
+document.addEventListener('DOMContentLoaded', () => {
+  fetchSurveys(); 
+  window.addEventListener('scroll', handleScroll); 
+});
