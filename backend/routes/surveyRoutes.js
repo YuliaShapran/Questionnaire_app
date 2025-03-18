@@ -7,7 +7,7 @@ import Survey from '../models/survey.js';
 router.get('/', async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;  
-    const limit = parseInt(req.query.limit) || 6; 
+    const limit = parseInt(req.query.limit) || 30; 
     const skip = (page - 1) * limit;
 
     const surveys = await Survey.find().skip(skip).limit(limit);
