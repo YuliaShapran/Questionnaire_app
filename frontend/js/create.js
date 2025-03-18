@@ -6,6 +6,7 @@ const descriptionInput = document.getElementById('survey-description');
 const questionsContainer = document.getElementById('questions-container');
 const addQuestionBtn = document.getElementById('add-question');
 
+
 let questionIndex = 0;
 
 function saveToLocalStorage() {
@@ -15,7 +16,7 @@ function saveToLocalStorage() {
     questions: [...questionsContainer.children].map((q) => ({
       text: q.querySelector('.question-text').value,
       type: q.querySelector('.question-type').value,
-      options: [...q.querySelectorAll('.option-input')].map((input) => input.value),
+      options: [...q.querySelectorAll('.option-input')].map((input) => input.value).filter(Boolean),
       image: q.querySelector('.image-preview')?.src || null
     }))
   };
@@ -31,6 +32,51 @@ function restoreFromLocalStorage() {
 
   savedData.questions.forEach((question) => addQuestion(question));
 }
+
+async function sendSurveyToAPI(surveyData) {
+  try {
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(surveyData)
+    });
+
+    if (!response.ok) throw new Error('Failed to create survey');
+
+    const result = await response.json();
+    console.log('✅ Survey created:', result);
+    alert('Survey created successfully!');
+    localStorage.removeItem('surveyData');
+    form.reset();
+    questionsContainer.innerHTML = '';
+  } catch (error) {
+    console.error('❌ Error creating survey:', error);
+    alert('Failed to create survey. Check the console for details.');
+  }
+}
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const surveyData = {
+    title: titleInput.value,
+    description: descriptionInput.value,
+    questions: [...questionsContainer.children].map((q) => ({
+      text: q.querySelector('.question-text').value,
+      type: q.querySelector('.question-type').value,
+      options: [...q.querySelectorAll('.option-input')].map((input) => input.value).filter(Boolean),
+      image: q.querySelector('.image-preview')?.src || null
+    }))
+  };
+
+  if (!surveyData.title || surveyData.questions.length === 0) {
+    alert('Please add a title and at least one question.');
+    return;
+  }
+
+  // Отправляем POST-запрос
+  await sendSurveyToAPI(surveyData);
+});
 
 function addQuestion(question = {}) {
   questionIndex++;
@@ -52,13 +98,11 @@ function addQuestion(question = {}) {
       <option value="image">Image Upload</option>
     </select>
 
-    <!-- Контейнер для вариантов -->
     <div class="options-container ${question.type === 'text' || question.type === 'image' ? 'hidden' : ''}">
       <label class="block font-semibold">Options:</label>
       <button type="button" class="add-option bg-blue-300 px-2 py-1 rounded">➕ Add Option</button>
     </div>
 
-    <!-- Контейнер для загрузки изображения -->
     <div class="image-container ${question.type === 'image' ? '' : 'hidden'} mt-4">
       <label class="block font-semibold">Upload Image:</label>
       <input type="file" class="image-upload border p-2 rounded w-full" accept="image/*">
@@ -75,7 +119,6 @@ function addQuestion(question = {}) {
   const imageContainer = questionDiv.querySelector('.image-container');
   const imageUpload = questionDiv.querySelector('.image-upload');
   const imagePreview = questionDiv.querySelector('.image-preview');
-
 
   if (question.options && question.options.length) {
     question.options.forEach((option) => {
@@ -114,12 +157,10 @@ function addQuestion(question = {}) {
     }
   });
 
-
   questionDiv.querySelector('.remove-question').addEventListener('click', () => {
     questionDiv.remove();
     saveToLocalStorage();
   });
-
 
   setupDragAndDrop(questionDiv);
   questionsContainer.appendChild(questionDiv);
@@ -164,13 +205,4 @@ function getDragAfterElement(y) {
 }
 
 restoreFromLocalStorage();
-
-form.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  localStorage.removeItem('surveyData');
-  alert('Survey created successfully!');
-  form.reset();
-  questionsContainer.innerHTML = '';
-});
-
 addQuestionBtn.addEventListener('click', () => addQuestion());
