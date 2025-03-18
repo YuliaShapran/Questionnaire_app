@@ -1,15 +1,19 @@
 const API_URL = 'https://questionnaire-app-n3a5.onrender.com/api/surveys';
 const quizContainer = document.getElementById('quiz-container');
+const themeToggle = document.getElementById('theme-toggle');
 
 let currentPage = 1;
-let isLoading = false; 
-let hasMoreSurveys = true; 
+let isLoading = false;
+let hasMoreSurveys = true;
+
+
+const isDarkMode = () => document.documentElement.classList.contains('dark');
 
 
 async function fetchSurveys() {
-  if (isLoading || !hasMoreSurveys) return; 
+  if (isLoading || !hasMoreSurveys) return;
 
-  isLoading = true; 
+  isLoading = true;
 
   try {
     const response = await fetch(`${API_URL}?page=${currentPage}`);
@@ -21,7 +25,7 @@ async function fetchSurveys() {
       hasMoreSurveys = false; 
     } else {
       displaySurveys(surveys);
-      currentPage++; 
+      currentPage++;
     }
   } catch (error) {
     console.error('Ошибка при загрузке опросов:', error);
@@ -34,7 +38,9 @@ async function fetchSurveys() {
 function displaySurveys(surveys) {
   surveys.forEach((survey) => {
     const surveyCard = document.createElement('div');
-    surveyCard.className = 'card p-4 bg-white shadow rounded-lg';
+    surveyCard.className = `card p-4 rounded-lg shadow transition-colors ${
+      isDarkMode() ? 'bg-gray-800 text-white' : 'bg-white text-black'
+    }`;
     surveyCard.innerHTML = `
       <h3 class="text-xl font-semibold mb-2">${survey.title}</h3>
       <p class="mb-4">${survey.description}</p>
@@ -104,7 +110,26 @@ function handleScroll() {
 }
 
 
+themeToggle.addEventListener('click', () => {
+  document.documentElement.classList.toggle('dark');
+  updateCardStyles();
+});
+
+
+function updateCardStyles() {
+  document.querySelectorAll('.card').forEach((card) => {
+    if (isDarkMode()) {
+      card.classList.add('bg-gray-800', 'text-white');
+      card.classList.remove('bg-white', 'text-black');
+    } else {
+      card.classList.add('bg-white', 'text-black');
+      card.classList.remove('bg-gray-800', 'text-white');
+    }
+  });
+}
+
+
 document.addEventListener('DOMContentLoaded', () => {
-  fetchSurveys(); 
-  window.addEventListener('scroll', handleScroll); 
+  fetchSurveys();
+  window.addEventListener('scroll', handleScroll);
 });
