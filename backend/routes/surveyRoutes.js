@@ -5,29 +5,38 @@ import Survey from '../models/survey.js';
 
 
 router.get('/', async (req, res) => {
-	try {
-    const page = parseInt(req.query.page) || 1; 
-    const limit = parseInt(req.query.limit) || 5;
+  try {
+    const page = parseInt(req.query.page) || 1;  
+    const limit = parseInt(req.query.limit) || 6; 
     const skip = (page - 1) * limit;
-
 
     const surveys = await Survey.find().skip(skip).limit(limit);
     const total = await Survey.countDocuments();
 
-    res.json({ surveys, total });
+    res.status(200).json({
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
+      surveys,
+    });
+
+    console.log(`Sent ${surveys.length} surveys (Page: ${page})`);
   } catch (error) {
-    console.error('Error loading questionnaires:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error('Error fetching surveys:', error);
+    res.status(500).json({ error: 'Error fetching surveys' });
   }
 });
+
 
 router.post('/', async (req, res) => {
   try {
     const newSurvey = new Survey(req.body);
     await newSurvey.save();
+    console.log('Survey created:', newSurvey);
     res.status(201).json(newSurvey);
   } catch (error) {
-    res.status(400).json({ message: 'Error creating questionnaire' });
+    console.error('Error saving survey:', error);
+    res.status(400).json({ error: 'Failed to create survey' });
   }
 });
 
